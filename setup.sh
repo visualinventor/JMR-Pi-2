@@ -42,7 +42,7 @@ then
 fi
 
 ## installing the correct java txrx library:
-apt-get -y install openjdk-7-jre librxtx-java x11vnc
+apt-get -y install oracle-java7-jdk librxtx-java xrdp
 if [ $? -ne 0 ]
 then
   error "Failed to install dependencies"
@@ -101,16 +101,13 @@ fi
 # add the vnc service to start at boot
 update-rc.d vncserver defaults
 
-# get the current ip address
-if [ -e /sys/class/net/wlan0 ]; then
-  export INTERFACE="wlan0"
-elif [ -e /sys/class/net/eth0 ]; then
-  export INTERFACE="eth0"
-fi
-IPADDRESS="$(ifconfig $INTERFACE | sed -n '/^[A-Za-z0-9]/ {N;/dr:/{;s/.*dr://;s/ .*//;p;}}')"
-
+# get the current ip addresses
+ip=$(hostname -I)
+echo -e " hostname -I" > test.log
 # echo the details:
-echo -e "Your JMRI server is ready...\n============\n\nPlease connect to $IPADDRESS:5901 with a VNC client to configure JMRI.\n\nPlease note that JMRI will take several minutes to start the first time it is run.\n\nYour config files should be available by browsing to \\\\\\$IPADDRESS\\JMRI\\ "
+echo "### Your JMRI server is ready ###"
+echo "VNC/RDP IPs: $ip Port: 5901"
+echo "JMRI will take several minutes to start the first time it is run."
+echo "Your config files should be available by browsing to \\$IPADDRESS\\JMRI\\"
 
 exit 0
-
