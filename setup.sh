@@ -79,27 +79,27 @@ echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 
 # copy the files to the correct location and set permissions:
 cp $WORKING_DIR/scripts/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
-cp $WORKING_DIR/scripts/init.d/vncserver /etc/init.d/vncserver
+# cp $WORKING_DIR/scripts/init.d/vncserver /etc/init.d/vncserver
 if [ ! -f /home/jmri/.jmri/PanelProConfig2.xml ]
 then
   cp $WORKING_DIR/scripts/jmri/PanelProConfig2.xml /home/jmri/.jmri/PanelProConfig2.xml
   ln -s /home/jmri/.jmri/JmriFacelessConfig3.xml /home/jmri/.jmri/PanelProConfig2.xml
 fi
-chmod +x /etc/init.d/vncserver
+#chmod +x /etc/init.d/vncserver
 mkdir -p /home/jmri/.config/lxsession/LXDE
 echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE/autostart
 chown -Rf jmri: /home/jmri
 chown -Rf jmri: /opt/JMRI
 
 # start the services:
-/etc/init.d/vncserver start
-if [ $? -ne 0 ]
-then
-  warning "VNC server failed to start"
-fi
-
+#/etc/init.d/vncserver start
+#if [ $? -ne 0 ]
+#then
+#  warning "VNC server failed to start"
+#fi
+#
 # add the vnc service to start at boot
-update-rc.d vncserver defaults
+#update-rc.d vncserver defaults
 
 # get the current ip addresses
 ip=$(hostname -I)
