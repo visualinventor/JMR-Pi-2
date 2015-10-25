@@ -51,8 +51,13 @@ then
   error "Failed to install JAVA"
 fi
 
+#create 2 pwd groups for our user to live in:
+groupadd -r autologin
+groupadd -r nopasswdlogin
+
 # create the jmri user that we will run as:
-useradd -m -s /bin/bash -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input jmri
+useradd -mG autologin,nopasswd,login,adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input -s /bin/bash jmri
+#useradd -m -s /bin/bash -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input jmri
 echo -e "jmri:trains" | (chpasswd)
 
 # install SAMBA and configure a file server:
