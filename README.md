@@ -7,7 +7,7 @@ To get the code, log onto your R-PI, start a terminal if you do not have one alr
 
 ```bash
 git clone https://github.com/visualinventor/JMR-Pi-2
-cd JMR-Pi
+cd JMR-Pi-2
 sudo ./setup.sh
 ```
 
