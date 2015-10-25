@@ -83,7 +83,7 @@ then
   ln -s /home/jmri/.jmri/JmriFacelessConfig3.xml /home/jmri/.jmri/PanelProConfig2.xml
 fi
 chmod +x /etc/init.d/vncboot
-mkdir -p /home/jmri/.config/lxsession/LXDE
+mkdir -p /home/jmri/.config/lxsession/LXDE-pi
 echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
 chown -Rf jmri: /home/jmri
 chown -Rf jmri: /opt/JMRI
