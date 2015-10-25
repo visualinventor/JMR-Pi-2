@@ -3,6 +3,7 @@
 # JMR-Pi   - Copyright Matthew Macdonald-Wallace 2012
 # JMR-Pi 2 - Copyright Tim Watson 2015
 
+## DOWNLOAD the various packages we need
 JMRI_URL=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 5,6 | cut -d " " -f 2 | cut -d '"' -f 2)
 JMRI_PACKAGE_NAME=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 6 | cut -d "/" -f 8)
 WORKING_DIR=$(pwd)
@@ -18,7 +19,7 @@ function error()
   exit 1
 }
 
-# create the downloads dir and get the latest stable version of JMRI
+# CREATE the DOWNLOADS dir and get the latest stable version of JMRI
 mkdir jmri_downloads
 cd jmri_downloads
 if [ -f $JMRI_PACKAGE_NAME ]
@@ -34,6 +35,7 @@ then
   exit 1
 fi
 
+## MOVE JMRI into the /opt folder
 echo "Unpacking the source into /opt"
 cd /opt
 tar -zxf $WORKING_DIR/jmri_downloads/$JMRI_PACKAGE_NAME 
@@ -42,7 +44,7 @@ then
   error "Failed to unpack JMRI sources into /opt"
 fi
 
-## installing the correct java txrx library:
+## Installing the correct java with txrx library:
 apt-get -y install oracle-java7-jdk librxtx-java xrdp
 if [ $? -ne 0 ]
 then
@@ -74,27 +76,29 @@ echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 
 # copy the files to the correct location and set permissions:
 cp $WORKING_DIR/scripts/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
-cp $WORKING_DIR/scripts/init.d/vncserver /etc/init.d/vncserver
+cp $WORKING_DIR/scripts/init.d/vncboot /etc/init.d/vncboot
 if [ ! -f /home/jmri/.jmri/PanelProConfig2.xml ]
 then
   cp $WORKING_DIR/scripts/jmri/PanelProConfig2.xml /home/jmri/.jmri/PanelProConfig2.xml
   ln -s /home/jmri/.jmri/JmriFacelessConfig3.xml /home/jmri/.jmri/PanelProConfig2.xml
 fi
-chmod +x /etc/init.d/vncserver
+chmod +x /etc/init.d/vncboot
 mkdir -p /home/jmri/.config/lxsession/LXDE
-echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE/autostart
+echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
 chown -Rf jmri: /home/jmri
 chown -Rf jmri: /opt/JMRI
 
 # start the services:
-/etc/init.d/vncserver start
+/etc/init.d/vncboot start
 if [ $? -ne 0 ]
  then
   warning "VNC server failed to start"
 fi
 #
 # add the vnc service to start at boot
-update-rc.d vncserver defaults
+update-rc.d vncboot defaults
+# or might use this instead == update-rc.d /etc/init.d/vncboot defaults
+
 
 # get the current ip addresses
 ip=$(hostname -I)
