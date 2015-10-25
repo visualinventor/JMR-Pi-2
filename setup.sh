@@ -76,14 +76,14 @@ echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 
 # copy the files to the correct location and set permissions:
 cp $WORKING_DIR/scripts/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
-cp $WORKING_DIR/scripts/init.d/vncboot /etc/init.d/vncboot
+cp $WORKING_DIR/scripts/init.d/tightvncserver /etc/init.d/tightvncserver
 if [ ! -f /home/jmri/.jmri/PanelProConfig2.xml ]
 then
   cp $WORKING_DIR/scripts/jmri/PanelProConfig2.xml /home/jmri/.jmri/PanelProConfig2.xml
   ln -s /home/jmri/.jmri/JmriFacelessConfig3.xml /home/jmri/.jmri/PanelProConfig2.xml
 fi
 
-chmod 755 /etc/init.d/vncboot
+chmod 755 /etc/init.d/tightvncserver
 #chmod +x /etc/init.d/vncboot
 mkdir -p /home/jmri/.config/lxsession/LXDE-pi
 echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
@@ -91,16 +91,16 @@ chown -Rf jmri: /home/jmri
 chown -Rf jmri: /opt/JMRI
 
 # start the services:
-/etc/init.d/vncboot start
+/etc/init.d/tightvncserver start
 if [ $? -ne 0 ]
  then
   warning "VNC server failed to start"
 fi
 #
 # add the vnc service to start at boot
-update-rc.d vncboot defaults
+update-rc.d tightvncserver defaults
 # or might need to use this instead
-# update-rc.d /etc/init.d/vncboot defaults
+# update-rc.d /etc/init.d/tightvncserver defaults
 
 
 # get the current ip addresses
