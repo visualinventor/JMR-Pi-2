@@ -45,11 +45,11 @@ then
 fi
 
 ## Installing the correct java with txrx library:
-apt-get -y install oracle-java7-jdk librxtx-java xrdp
-if [ $? -ne 0 ]
-then
-  error "Failed to install JAVA"
-fi
+#apt-get -y install oracle-java7-jdk librxtx-java xrdp
+#if [ $? -ne 0 ]
+#then
+#  error "Failed to install JAVA"
+#fi
 
 #create 2 pwd groups for our user to live in:
 groupadd -r autologin
