@@ -48,7 +48,7 @@ fi
 apt-get -y install oracle-java7-jdk librxtx-java xrdp
 if [ $? -ne 0 ]
 then
-  error "Failed to install dependencies"
+  error "Failed to install JAVA"
 fi
 
 # create the jmri user that we will run as:
