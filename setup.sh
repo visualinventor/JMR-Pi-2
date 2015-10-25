@@ -82,7 +82,9 @@ then
   cp $WORKING_DIR/scripts/jmri/PanelProConfig2.xml /home/jmri/.jmri/PanelProConfig2.xml
   ln -s /home/jmri/.jmri/JmriFacelessConfig3.xml /home/jmri/.jmri/PanelProConfig2.xml
 fi
-chmod +x /etc/init.d/vncboot
+
+chmod 755 /etc/init.d/vncboot
+#chmod +x /etc/init.d/vncboot
 mkdir -p /home/jmri/.config/lxsession/LXDE-pi
 echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
 chown -Rf jmri: /home/jmri
@@ -97,7 +99,8 @@ fi
 #
 # add the vnc service to start at boot
 update-rc.d vncboot defaults
-# or might use this instead == update-rc.d /etc/init.d/vncboot defaults
+# or might need to use this instead
+# update-rc.d /etc/init.d/vncboot defaults
 
 
 # get the current ip addresses
