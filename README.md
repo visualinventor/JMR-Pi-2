@@ -14,12 +14,11 @@ sudo ./setup.sh
 
 This will:
 
-  * Install Git
   * Checkout this repository
   * Change to the checked-out code
   * Run the installation script
   * Create a dedicated JMRI user
-  * Start a remote desktop server
+  * Start a VNC/remote desktop server
   * Launch JMRI
 
 The password for the JMRI user (should you need to connect to the R-Pi and run commands on its behalf!) is "trains".
