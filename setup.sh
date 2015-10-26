@@ -56,9 +56,16 @@ groupadd -r autologin
 groupadd -r nopasswdlogin
 
 # create the jmri user that we will run as:
-useradd -mG autologin,nopasswd,login,adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input -s /bin/bash jmri
-#useradd -m -s /bin/bash -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input jmri
+#useradd -mG autologin,nopasswdlogin,adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input -s /bin/bash jmri
+useradd -m -s /bin/bash -G autologin,nopasswdlogin,adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input jmri
 echo -e "jmri:trains" | (chpasswd)
+
+gpasswd -a jmri autologin
+gpasswd -a jmri nopasswdlogin
+
+#sed '2 i auth sufficient pam_succeed_if.so user ingroup nopasswdlogin' /etc/pam.d/lightdm
+echo "auth        sufficient  pam_succeed_if.so user ingroup nopasswdlogin" | sudo tee -a /etc/pam.d/lightdm
+
 
 # install SAMBA and configure a file server:
 apt-get -y install samba samba-common-bin
