@@ -91,7 +91,7 @@ echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 
 #get tightvncserver
 apt-get -y install tightvncserver
-tightvncserver
+#tightvncserver
 
 
 # copy the files to the correct location and set permissions:
