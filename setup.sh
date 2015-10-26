@@ -58,12 +58,13 @@ groupadd -r nopasswdlogin
 # create the jmri user that we will run as:
 #useradd -mG autologin,nopasswdlogin,adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input -s /bin/bash jmri
 useradd -m -s /bin/bash -G autologin,nopasswdlogin,adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input jmri
-echo -e "jmri:trains" | (chpasswd)
+echo -e "jmri:trains" | (sudo chpasswd)
 
 gpasswd -a jmri autologin
 gpasswd -a jmri nopasswdlogin
 
 #sed '2 i auth sufficient pam_succeed_if.so user ingroup nopasswdlogin' /etc/pam.d/lightdm
+#pam.d needs to know to auto load the nopasswdlogin group
 echo "auth        sufficient  pam_succeed_if.so user ingroup nopasswdlogin" | sudo tee -a /etc/pam.d/lightdm
 
 
