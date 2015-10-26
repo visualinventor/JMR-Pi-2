@@ -90,7 +90,7 @@ chown -Rf jmri: /home/jmri/.jmri
 echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 
 #get tightvncserver
-sudo apt-get install tightvncserver
+apt-get -y install tightvncserver
 tightvncserver
 
 
