@@ -89,6 +89,11 @@ chown -Rf jmri: /home/jmri/.jmri
 # add the user to the Samba database
 echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 
+#get tightvncserver
+sudo apt-get install tightvncserver
+tightvncserver
+
+
 # copy the files to the correct location and set permissions:
 cp $WORKING_DIR/scripts/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
 cp $WORKING_DIR/scripts/init.d/tightvncserver /etc/init.d/tightvncserver
