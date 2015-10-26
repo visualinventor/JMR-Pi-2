@@ -20,7 +20,7 @@ eval cd ~$USER
  
 case "$1" in
   start)
-    su $USER -c '/usr/bin/tightvncserver :1 -geometry 1280x800 -depth 32 -pixelformat rgb565'
+    su $USER -c '/usr/bin/vncserver :1 -geometry 1280x800 -depth 32 -pixelformat rgb565'
     echo "Starting TightVNC server for $USER "
     ;;
   stop)
