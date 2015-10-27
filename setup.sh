@@ -104,7 +104,9 @@ fi
 chmod +x /etc/init.d/tightvncserver
 
 mkdir -p /home/jmri/.config/lxsession/LXDE-pi
+# To run a more limited version of JMRI (Faceless) comment out the below line and uncomment the one below it
 echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
+#echo '@/opt/JMRI/JmriFaceless' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
 chown -Rf jmri: /home/jmri
 chown -Rf jmri: /opt/JMRI
 
