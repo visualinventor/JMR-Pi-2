@@ -45,7 +45,7 @@ then
 fi
 
 # === 05-2015 Debian/Raspian has oracle java 1.8.0 included  ===
-## Installing the correct java with rxtx library:
+## Installing a compatible java with rxtx library:
 apt-get -y install oracle-java8-jdk librxtx-java xrdp
 if [ $? -ne 0 ]
 then
