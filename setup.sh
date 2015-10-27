@@ -44,14 +44,15 @@ then
   error "Failed to unpack JMRI sources into /opt"
 fi
 
-## Installing the correct java with txrx library:
-#apt-get -y install oracle-java7-jdk librxtx-java xrdp
-#if [ $? -ne 0 ]
-#then
-#  error "Failed to install JAVA"
-#fi
+# === 05-2015 Debian/Raspian has oracle java 1.8.0 included  ===
+## Installing the correct java with rxtx library:
+apt-get -y install oracle-java8-jdk librxtx-java xrdp
+if [ $? -ne 0 ]
+then
+  error "Failed to install JAVA"
+fi
 
-#create 2 pwd groups for our user to live in:
+#create 2 pwd groups for our jmri user to live in:
 groupadd -r autologin
 groupadd -r nopasswdlogin
 
@@ -63,9 +64,7 @@ echo -e "jmri:trains" | (sudo chpasswd)
 gpasswd -a jmri autologin
 gpasswd -a jmri nopasswdlogin
 
-#sed '2 i auth sufficient pam_succeed_if.so user ingroup nopasswdlogin' /etc/pam.d/lightdm
-
-#pam.d needs to know to auto load the nopasswdlogin group
+#pam.d needs to know to auto load the nopasswdlogin group - https://wiki.archlinux.org/index.php/LightDM
 echo "auth        sufficient  pam_succeed_if.so user ingroup nopasswdlogin" | sudo tee -a /etc/pam.d/lightdm
 
 
@@ -91,8 +90,6 @@ echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 
 #get tightvncserver
 apt-get -y install tightvncserver
-#tightvncserver
-
 
 # copy the files to the correct location and set permissions:
 cp $WORKING_DIR/scripts/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
@@ -105,7 +102,6 @@ then
 fi
 
 chmod +x /etc/init.d/tightvncserver
-#chmod +x /etc/init.d/vncboot
 
 mkdir -p /home/jmri/.config/lxsession/LXDE-pi
 echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
@@ -121,9 +117,6 @@ fi
 #
 # add the vnc service to start at boot
 update-rc.d tightvncserver defaults
-# or might need to use this instead
-# update-rc.d /etc/init.d/tightvncserver defaults
-
 
 # get the current ip addresses
 ip=$(hostname -I)
