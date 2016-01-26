@@ -1,7 +1,70 @@
 #!/bin/bash
 #
-# JMR-Pi   - Copyright Matthew Macdonald-Wallace 2012
+# JMR-Pi   -  Copyright Matthew Macdonald-Wallace 2012
 # JMR-Pi 2 - Copyright Tim Watson 2015-2016
+# All JMRI sources are owned/copyrighted by JMRI
+
+#Set the working dir up high
+WORKING_DIR=$(pwd)
+
+# Installing wi-fi hotspot library
+apt-get -y install hostapd udhcpd
+if [ $? -ne 0 ]
+then
+  error "Failed to install wi-fi hot spot library"
+fi
+
+cp $WORKING_DIR/conf/hostapd/udhcpd.conf /etc/udhcpd.conf
+if [ $? -ne 0 ]
+then
+  error "Failed to copy udhcpd config file"
+fi
+
+# We need to comment out the no dhcp option
+sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
+
+#Next we need to set a static IP address since we're now a hotspot
+ ifconfig wlan0 192.168.10.1
+
+#Add our new static ip address to the pi
+echo "iface wlan0 inet static address 192.168.10.1 netmask 255.255.255.0" >> /etc/network/interfaces
+
+# We need to comment out theese if they exist
+sed -e '/allow-hotplug/ s/^#*/#/' -i /etc/network/interfaces
+sed -e '/wpa-roam/ s/^#*/#/' -i /etc/network/interfaces
+sed -e '/iface default inet manual/ s/^#*/#/' -i /etc/network/interfaces
+
+cp $WORKING_DIR/conf/hostapd/hostapd.conf  /etc/hostapd/hostapd.conf
+if [ $? -ne 0 ]
+then
+  error "Failed to copy hostapd config file"
+fi
+
+# Make sure the DAEMON is set 
+echo 'DAEMON_CONF="/etc/hostapd/hostapd.conf"' >> /etc/default/hostapd
+
+# Start the nat ip forwarding
+sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
+
+# Setup IP tables
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE 
+iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+ 
+ # Save IP tables
+sh -c "iptables-save > /etc/iptables.ipv4.nat"
+
+echo "up iptables-restore < /etc/iptables.ipv4.nat" >> /etc/network/interfaces
+
+# Start them up
+service hostapd start
+service udhcpd start
+
+update-rc.d hostapd enable
+update-rc.d udhcpd enable
+
+#### End wi-fi hotspot setup
 
 ## Installing a JMRI 4 or greater compatible java with rxtx library:
 apt-get -y install oracle-java8-jdk librxtx-java xrdp
@@ -10,11 +73,9 @@ then
   error "Failed to install JAVA"
 fi
 
-
-## DOWNLOAD the various packages we need
+## DOWNLOAD the various JMRI packages we need
 JMRI_URL=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 5,6 | cut -d " " -f 2 | cut -d '"' -f 2)
 JMRI_PACKAGE_NAME=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 6 | cut -d "/" -f 8)
-WORKING_DIR=$(pwd)
 
 function warning()
 {
