@@ -1,7 +1,15 @@
 #!/bin/bash
 #
 # JMR-Pi   - Copyright Matthew Macdonald-Wallace 2012
-# JMR-Pi 2 - Copyright Tim Watson 2015
+# JMR-Pi 2 - Copyright Tim Watson 2015-2016
+
+## Installing a JMRI 4 or greater compatible java with rxtx library:
+apt-get -y install oracle-java8-jdk librxtx-java xrdp
+if [ $? -ne 0 ]
+then
+  error "Failed to install JAVA"
+fi
+
 
 ## DOWNLOAD the various packages we need
 JMRI_URL=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 5,6 | cut -d " " -f 2 | cut -d '"' -f 2)
@@ -44,13 +52,6 @@ then
   error "Failed to unpack JMRI sources into /opt"
 fi
 
-# === 05-2015 Debian/Raspian has oracle java 1.8.0 included  ===
-## Installing a JMRI 4 or greater compatible java with rxtx library:
-apt-get -y install oracle-java8-jdk librxtx-java xrdp
-if [ $? -ne 0 ]
-then
-  error "Failed to install JAVA"
-fi
 
 #create 2 pwd groups for our jmri user to live in:
 groupadd -r autologin
@@ -75,7 +76,7 @@ then
   error "Failed to install samba"
 fi
 
-cp $WORKING_DIR/scripts/samba/smb.conf /etc/samba/smb.conf
+cp $WORKING_DIR/conf/samba/smb.conf /etc/samba/smb.conf
 if [ $? -ne 0 ]
 then
   error "Failed to copy samba config file"
@@ -92,12 +93,12 @@ echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 apt-get -y install tightvncserver
 
 # copy the files to the correct location and set permissions:
-cp $WORKING_DIR/scripts/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
-cp $WORKING_DIR/scripts/init.d/tightvncserver /etc/init.d/tightvncserver
+cp $WORKING_DIR/conf/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
+cp $WORKING_DIR/conf/init.d/tightvncserver /etc/init.d/tightvncserver
 
 if [ ! -f /home/jmri/.jmri/PanelProConfig2.xml ]
 then
-  cp $WORKING_DIR/scripts/jmri/PanelProConfig2.xml /home/jmri/.jmri/PanelProConfig2.xml
+  cp $WORKING_DIR/confs/jmri/PanelProConfig2.xml /home/jmri/.jmri/PanelProConfig2.xml
   ln -s /home/jmri/.jmri/JmriFacelessConfig3.xml /home/jmri/.jmri/PanelProConfig2.xml
 fi
 
