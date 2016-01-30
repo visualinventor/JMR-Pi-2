@@ -27,15 +27,19 @@ sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
  ifconfig wlan0 192.168.10.1
 
 # We need to comment out theese if they exist
+sed -e '/auto wlan0/ s/^#*/#/' -i /etc/network/interfaces
 sed -e '/allow-hotplug wlan0/ s/^#*/#/' -i /etc/network/interfaces
 sed -e '/wpa-roam/ s/^#*/#/' -i /etc/network/interfaces
 sed -e '/wpa-conf/ s/^#*/#/' -i /etc/network/interfaces
-#sed -e '/iface default inet manual/ s/^#*/#/' -i /etc/network/interfaces
+sed -e '/iface wlan0 inet manual/ s/^#*/#/' -i /etc/network/interfaces
 
 #Add our new static ip address to the pi
-echo "iface default inet static" >> /etc/network/interfaces
+echo "iface wlan0 inet static" >> /etc/network/interfaces
 echo "address 192.168.10.1" >> /etc/network/interfaces
 echo "netmask 255.255.255.0" >> /etc/network/interfaces
+echo "gateway 192.168.10.1" >> /etc/network/interfaces
+echo -e "\niface default inet static" >> /etc/network/interfaces
+
 
 # dhcp was running before the static ip was set so we need to make
 # the server start after it
