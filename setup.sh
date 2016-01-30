@@ -24,7 +24,7 @@ fi
 sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
 
 #Next we need to set a static IP address since we're now a hotspot
- ifconfig wlan0 192.168.10.1
+ifconfig wlan0 192.168.10.1
 
 # We need to comment out theese if they exist
 sed -e '/auto wlan0/ s/^#*/#/' -i /etc/network/interfaces
@@ -85,9 +85,12 @@ update-rc.d udhcpd enable
 #### End wi-fi hotspot setup
 
 # change name from default hostname
-echo '127.0.0.1 jmripi2' >> /etc/hosts
-sed '/raspberrypi/d' /etc/hostname
-echo 'jmripi2' >> /etc/hostname
+sed -e '/127.0.0.1\traspberrypi/ s/^#*/#/' -i /etc/hosts
+echo -e '127.0.0.1\tjmrpi2' >> /etc/hosts
+sed '1d' /etc/hostname
+echo 'jmrpi2' >> /etc/hostname
+echo "Setting hostname to jmrpi2"
+hostname jmrpi2
 
 ## Installing a JMRI 4 or greater compatible java with rxtx library:
 apt-get -y install oracle-java8-jdk librxtx-java xrdp
@@ -128,7 +131,7 @@ then
 fi
 
 ## MOVE JMRI into the /opt folder
-echo "Unpacking the source into /opt"
+echo "Unpacking the JMRI source into /opt"
 cd /opt
 tar -zxf $WORKING_DIR/jmri_downloads/$JMRI_PACKAGE_NAME 
 if [ $? -ne 0 ]
@@ -167,9 +170,6 @@ then
 fi
 service samba restart
 
-mkdir /home/jmri/.jmri
-chown -Rf jmri: /home/jmri/.jmri
-
 # add the user to the Samba database
 echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
 
@@ -180,20 +180,7 @@ apt-get -y install tightvncserver
 cp $WORKING_DIR/conf/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
 cp $WORKING_DIR/conf/init.d/tightvncserver /etc/init.d/tightvncserver
 
-if [ ! -f /home/jmri/.jmri/PanelProConfig2.xml ]
-then
-  cp $WORKING_DIR/confs/jmri/PanelProConfig2.xml /home/jmri/.jmri/PanelProConfig2.xml
-  ln -s /home/jmri/.jmri/JmriFacelessConfig3.xml /home/jmri/.jmri/PanelProConfig2.xml
-fi
-
 chmod +x /etc/init.d/tightvncserver
-
-mkdir -p /home/jmri/.config/lxsession/LXDE-pi
-# To run a more limited version of JMRI (Faceless) comment out the below line and uncomment the one below it
-echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
-#echo '@/opt/JMRI/JmriFaceless' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
-chown -Rf jmri: /home/jmri
-chown -Rf jmri: /opt/JMRI
 
 # start the services:
 /etc/init.d/tightvncserver start
@@ -205,6 +192,25 @@ fi
 # add the vnc service to start at boot
 update-rc.d tightvncserver defaults
 
+## ---- Now we do our JMRI file shuffle
+mkdir /home/jmri/.jmri
+chown -Rf jmri: /home/jmri/.jmri
+
+#if [ ! -f /home/jmri/.jmri/PanelProConfig2.properties ]
+#then
+#  cp $WORKING_DIR/confs/jmri/PanelProConfig2.properties /home/jmri/.jmri/PanelProConfig2.properties
+#  ln -s /home/jmri/.jmri/JmriFacelessConfig3.properties /home/jmri/.jmri/PanelProConfig2.properties
+#fi
+
+
+mkdir -p /home/jmri/.config/lxsession/LXDE-pi
+# To run a more limited version of JMRI (Faceless) comment out the below line and uncomment the one below it
+echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
+#echo '@/opt/JMRI/JmriFaceless' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
+chown -Rf jmri: /home/jmri
+chown -Rf jmri: /opt/JMRI
+
+
 # get the current ip addresses
 ip=$(hostname -I)
 echo -e "hostname -I" > test.log
@@ -212,6 +218,6 @@ echo -e "hostname -I" > test.log
 echo "---- Your JMRI server has been installed ----"
 echo "To connect through VNC or Remote Desktop use the following IP/port: $ip:5901"
 echo "JMRI will take several minutes to start the first time it is run."
-echo "Your config files should be available by browsing SAMBA to \\$ip\\JMRI\\"
+echo "Your config files should be available by browsing SAMBA to \$ip\JMRI\"
 
 exit 0
