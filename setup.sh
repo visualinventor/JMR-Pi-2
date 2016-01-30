@@ -66,6 +66,9 @@ update-rc.d udhcpd enable
 
 #### End wi-fi hotspot setup
 
+# change name from default hostname
+echo '127.0.0.1 jmripi2' >> /etc/hosts
+
 ## Installing a JMRI 4 or greater compatible java with rxtx library:
 apt-get -y install oracle-java8-jdk librxtx-java xrdp
 if [ $? -ne 0 ]
