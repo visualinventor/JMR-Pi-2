@@ -27,7 +27,9 @@ sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
  ifconfig wlan0 192.168.10.1
 
 #Add our new static ip address to the pi
-echo "iface wlan0 inet static address 192.168.10.1 netmask 255.255.255.0" >> /etc/network/interfaces
+echo "iface wlan0 inet static" >> /etc/network/interfaces
+echo "address 192.168.10.1" >> /etc/network/interfaces
+echo "netmask 255.255.255.0" >> /etc/network/interfaces
 
 # We need to comment out theese if they exist
 sed -e '/allow-hotplug/ s/^#*/#/' -i /etc/network/interfaces
