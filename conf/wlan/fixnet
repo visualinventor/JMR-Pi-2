@@ -1,0 +1,8 @@
+#!/bin/bash
+[ "$IFACE" != "lo" ] || exit 0
+
+## Dont start the dhcp server unless we have a static ip address
+if [ "$IFACE" = "wlan0" ]; then
+  ifconfig wlan0 192.168.10.1
+  udhcpd start
+fi
