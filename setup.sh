@@ -7,7 +7,16 @@
 #Set the working dir up high
 WORKING_DIR=$(pwd)
 
+# Make sure the pi has the most recent sources
+echo "Making sure your pi has the most recent sources"
+apt-get update
+
+# We need to set a static IP address since we're going to be a hotspot
+echo "------------- Setting static IP address of 192.168.10.1"
+ifconfig wlan0 192.168.10.1
+
 # Installing wi-fi hotspot library
+echo "------------- Going to get and install the wifi hotspot software"
 apt-get -y install hostapd udhcpd
 if [ $? -ne 0 ]
 then
@@ -23,10 +32,11 @@ fi
 # We need to comment out the no dhcp option
 sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
 
-#Next we need to set a static IP address since we're now a hotspot
-ifconfig wlan0 192.168.10.1
+## Backup interfaces file
+echo "------------- We're going to backup your network/interfaces file so you'll have the original"
+cp /etc/network/interfaces{,.bak}
 
-# We need to comment out theese if they exist
+# We need to comment out these if they exist
 sed -e '/auto wlan0/ s/^#*/#/' -i /etc/network/interfaces
 sed -e '/allow-hotplug wlan0/ s/^#*/#/' -i /etc/network/interfaces
 sed -e '/wpa-roam/ s/^#*/#/' -i /etc/network/interfaces
@@ -37,7 +47,7 @@ sed -e '/iface wlan0 inet manual/ s/^#*/#/' -i /etc/network/interfaces
 echo "iface wlan0 inet static" >> /etc/network/interfaces
 echo "address 192.168.10.1" >> /etc/network/interfaces
 echo "netmask 255.255.255.0" >> /etc/network/interfaces
-echo "gateway 192.168.10.1" >> /etc/network/interfaces
+#echo "gateway 192.168.10.1" >> /etc/network/interfaces
 echo -e "\niface default inet static" >> /etc/network/interfaces
 
 
@@ -79,17 +89,18 @@ echo "up iptables-restore < /etc/iptables.ipv4.nat" >> /etc/network/interfaces
 service hostapd start
 service udhcpd start
 
-update-rc.d hostapd enable
-update-rc.d udhcpd enable
+update-rc.d hostapd defaults
+update-rc.d udhcpd defaults
 
 #### End wi-fi hotspot setup
 
 # change name from default hostname
-sed -e '/127.0.0.1\traspberrypi/ s/^#*/#/' -i /etc/hosts
+echo "--------- Setting hostname to jmrpi2"
+sed -e '/127.0.0.1	raspberrypi/ s/^#*/#/' -i /etc/hosts
 echo -e '127.0.0.1\tjmrpi2' >> /etc/hosts
-sed '1d' /etc/hostname
+sed --in-place '/raspberrypi/d' /etc/hostname
 echo 'jmrpi2' >> /etc/hostname
-echo "Setting hostname to jmrpi2"
+
 hostname jmrpi2
 
 ## Installing a JMRI 4 or greater compatible java with rxtx library:
