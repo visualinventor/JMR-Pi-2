@@ -26,15 +26,16 @@ sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
 #Next we need to set a static IP address since we're now a hotspot
  ifconfig wlan0 192.168.10.1
 
+# We need to comment out theese if they exist
+sed -e '/allow-hotplug wlan0 / s/^#*/#/' -i /etc/network/interfaces
+sed -e '/wpa-roam/ s/^#*/#/' -i /etc/network/interfaces
+sed -e '/wpa-conf/ s/^#*/#/' -i /etc/network/interfaces
+sed -e '/iface default inet manual/ s/^#*/#/' -i /etc/network/interfaces
+
 #Add our new static ip address to the pi
-echo "iface wlan0 inet static" >> /etc/network/interfaces
+echo "iface default inet static" >> /etc/network/interfaces
 echo "address 192.168.10.1" >> /etc/network/interfaces
 echo "netmask 255.255.255.0" >> /etc/network/interfaces
-
-# We need to comment out theese if they exist
-sed -e '/allow-hotplug/ s/^#*/#/' -i /etc/network/interfaces
-sed -e '/wpa-roam/ s/^#*/#/' -i /etc/network/interfaces
-sed -e '/iface default inet manual/ s/^#*/#/' -i /etc/network/interfaces
 
 cp $WORKING_DIR/conf/hostapd/hostapd.conf  /etc/hostapd/hostapd.conf
 if [ $? -ne 0 ]
@@ -70,6 +71,8 @@ update-rc.d udhcpd enable
 
 # change name from default hostname
 echo '127.0.0.1 jmripi2' >> /etc/hosts
+sed -e 'raspberrypi s/^#*/#/' -i  /etc/hostname
+echo ' jmripi2' >> /etc/hostname
 
 ## Installing a JMRI 4 or greater compatible java with rxtx library:
 apt-get -y install oracle-java8-jdk librxtx-java xrdp
