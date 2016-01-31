@@ -1,4 +1,4 @@
-JMR-Pi 2
+JMRPi2
 =========
 
 This repo contains scripts to configure JMRI on a Raspberry PI for use in the computer control of layouts.
