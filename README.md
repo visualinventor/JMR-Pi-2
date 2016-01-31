@@ -1,7 +1,7 @@
 JMRPi2
 =========
 
-This repo contains scripts to configure JMRI on a Raspberry PI for use in the computer control of layouts.
+This repo contains scripts to configure JMRI on a Raspberry PI 2 for use in the computer control of model railroad layouts.
 
 To get the code, log onto your R-PI, start a terminal if you do not have one already and run the following commands:
 
