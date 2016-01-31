@@ -6,8 +6,12 @@ This repo contains scripts to configure JMRI on a Raspberry PI for use in the co
 To get the code, log onto your R-PI, start a terminal if you do not have one already and run the following commands:
 
 ```bash
-git clone https://github.com/visualinventor/JMR-Pi-2
-cd JMR-Pi-2
+git clone https://github.com/visualinventor/JMRPi2
+```
+```bash
+cd JMRPi2
+```
+```bash
 sudo ./setup.sh
 ```
 
