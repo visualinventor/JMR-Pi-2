@@ -26,9 +26,7 @@ This will:
   * Start a VNC/remote desktop server
   * Automatically Launch JMRI
 
-About halfway through you will be asked About "setting a password for your desktops"
-Type in whatever password you would like but remember it because this will be the password you use to VNC into your RPi. 
-The password for the JMRI user (should you need to connect to the R-Pi and run commands on its behalf!) is "trains".
+About halfway through you will be asked About "setting a password for your desktops". Type in whatever password you would like but remember it because this will be the password you use to VNC into your RPi. The password for the JMRI user (should you need to connect to the R-Pi and run commands on its behalf!) is "trains".
 
 The message that is generated at the end of the script gives you an IP Address and a Port Number to use to log in via VNC and start a remote desktop session.  Once you have done this, you should see JMRI starting up.
 
