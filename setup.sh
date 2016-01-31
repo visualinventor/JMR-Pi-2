@@ -36,30 +36,36 @@ sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
 echo "------------- We're going to backup your network/interfaces file so you'll have the original"
 cp /etc/network/interfaces{,.bak}
 
+# With dhcpcd these are all unecessary
 # We need to comment out these if they exist
-sed -e '/auto wlan0/ s/^#*/#/' -i /etc/network/interfaces
-sed -e '/allow-hotplug wlan0/ s/^#*/#/' -i /etc/network/interfaces
-sed -e '/wpa-roam/ s/^#*/#/' -i /etc/network/interfaces
-sed -e '/wpa-conf/ s/^#*/#/' -i /etc/network/interfaces
-sed -e '/iface wlan0 inet manual/ s/^#*/#/' -i /etc/network/interfaces
+#sed -e '/auto wlan0/ s/^#*/#/' -i /etc/network/interfaces
+#sed -e '/allow-hotplug wlan0/ s/^#*/#/' -i /etc/network/interfaces
+#sed -e '/wpa-roam/ s/^#*/#/' -i /etc/network/interfaces
+#sed -e '/wpa-conf/ s/^#*/#/' -i /etc/network/interfaces
+#sed -e '/iface wlan0 inet manual/ s/^#*/#/' -i /etc/network/interfaces
 
 #Add our new static ip address to the pi
-echo "iface wlan0 inet static" >> /etc/network/interfaces
-echo "address 192.168.10.1" >> /etc/network/interfaces
-echo "netmask 255.255.255.0" >> /etc/network/interfaces
-#echo "gateway 192.168.10.1" >> /etc/network/interfaces
-echo -e "\niface default inet static" >> /etc/network/interfaces
+#echo "iface wlan0 inet static" >> /etc/network/interfaces
+#echo "	address 192.168.10.1" >> /etc/network/interfaces
+#echo "	netmask 255.255.255.0" >> /etc/network/interfaces
+#echo "	gateway 192.168.10.1" >> /etc/network/interfaces
+#echo -e "\niface default inet static" >> /etc/network/interfaces
 
+# With dhcpcd these are all we need
+echo "interface wlan0" >> /etc/dhcpcd.conf
+echo "static ip_address=192.168.10.1/24" >> /etc/dhcpcd.conf
+echo "static routers=192.168.10.1" >> /etc/dhcpcd.conf
+echo "static domain_name_servers=192.168.10.1" >> /etc/dhcpcd.conf
 
 # dhcp was running before the static ip was set so we need to make
 # the server start after it
-cp $WORKING_DIR/conf/wlan/fixnet /etc/network/if-up.d/
-if [ $? -ne 0 ]
-then
-  error "Failed to copy fixnet file"
-fi
+#cp $WORKING_DIR/conf/wlan/fixnet /etc/network/if-up.d/
+#if [ $? -ne 0 ]
+#then
+#  error "Failed to copy fixnet file"
+#fi
 
-chmod 755 /etc/network/if-up.d/fixnet
+#chmod 755 /etc/network/if-up.d/fixnet
 
 
 cp $WORKING_DIR/conf/hostapd/hostapd.conf  /etc/hostapd/hostapd.conf
@@ -229,6 +235,6 @@ echo -e "hostname -I" > test.log
 echo "---- Your JMRI server has been installed ----"
 echo "To connect through VNC or Remote Desktop use the following IP/port: $ip:5901"
 echo "JMRI will take several minutes to start the first time it is run."
-echo "Your config files should be available by browsing SAMBA to \$ip\JMRI\"
+echo "Your config files should be available by browsing SAMBA to \\$ip\\JMRI\\"
 
 exit 0
