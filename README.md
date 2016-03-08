@@ -34,10 +34,20 @@ It's highly recommended to disconnect your wired ethernet connection AFTER the i
 
 AT A GLANCE:
 SSH:
-user is jmri
+----------------
+user is jmrpi2
+
 pw is trains
 
-Wireless IP address is set as static (this is the ip address of the wireless raspberry pi network adapter): 192.168.10.1
+Wireless IP address is set as static
+(this is the ip address of the wireless raspberry pi network adapter): 192.168.10.1
 Local based dns name is: jmrpi2.local
 
-
+```bash
+echo "---- Your Wireless Access point and JMRI server have been installed ----"
+echo "JMRI will take several minutes to start the first time it is run."
+echo "Once JMRI is started you must connect to the Raspberry Pi and finish setup INSIDE JMRI."
+echo "Up to this point JMRI doesn't know your command station or connection method. YOU NEED TO SET THIS UP NEXT."
+echo "To connect through VNC or Remote Desktop use the following IP/port: 192.168.10.10:5901"
+echo "Your JMRI config files will be available by browsing with SAMBA on a PC  to \\192.168.10.10\\JMRI\\ or via Macintosh jmrpi2.local"
+```
