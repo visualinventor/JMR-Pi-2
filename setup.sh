@@ -1,8 +1,13 @@
 #!/bin/bash
 #
-# JMR-Pi   -  Copyright Matthew Macdonald-Wallace 2012
-# JMR-Pi 2 - Copyright Tim Watson 2015-2016
+# JMRPi2 -   Copyright Tim Watson 2015-2016
+# JMR-Pi -   Copyright Matthew Macdonald-Wallace 2012
 # All JMRI sources are owned/copyrighted by JMRI
+
+# Set these to be anything you like
+CUSTOM_USER="jmrpi2"
+CUSTOM_PASSWORD="trains"
+CUSTOM_HOSTNAME="jmrpi2"
 
 #Set the working dir up high
 WORKING_DIR=$(pwd)
@@ -74,10 +79,10 @@ update-rc.d udhcpd defaults
 # change name from default hostname
 echo "------------- Setting hostname to jmrpi2"
 sed -e '/127.0.0.1	raspberrypi/ s/^#*/#/' -i /etc/hosts
-echo -e '127.0.0.1\tjmrpi2' >> /etc/hosts
+echo -e '127.0.0.1\t$CUSTOM_HOSTNAME' >> /etc/hosts
 sed --in-place '/raspberrypi/d' /etc/hostname
-echo 'jmrpi2' >> /etc/hostname
-hostname jmrpi2
+echo $CUSTOM_HOSTNAME >> /etc/hostname
+hostname $CUSTOM_HOSTNAME
 
 ## Installing a JMRI 4 or greater compatible java with rxtx library:
 echo "------------- Installing a JMRI 4 or greater compatible java with rxtx library"
@@ -104,8 +109,8 @@ function error()
 }
 
 # CREATE the DOWNLOADS dir and get the latest stable version of JMRI
-mkdir jmri_downloads
-cd jmri_downloads
+mkdir jmri_download
+cd jmri_download
 if [ -f $JMRI_PACKAGE_NAME ]
 then
   echo -e "Package already downloading, skipping this step..."
@@ -134,11 +139,11 @@ groupadd -r autologin
 groupadd -r nopasswdlogin
 
 # create the jmri user that we will run as:
-useradd -m -s /bin/bash -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input jmri
-echo -e "jmri:trains" | (sudo chpasswd)
+useradd -m -s /bin/bash -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input jmrpi2
+echo -e "$CUSTOM_USER:$CUSTOM_PASSWORD" | (sudo chpasswd)
 
-gpasswd -a jmri autologin
-gpasswd -a jmri nopasswdlogin
+gpasswd -a $CUSTOM_USER autologin
+gpasswd -a $CUSTOM_USER nopasswdlogin
 
 #pam.d needs to know to auto load the nopasswdlogin group - https://wiki.archlinux.org/index.php/LightDM
 echo "auth        sufficient  pam_succeed_if.so user ingroup nopasswdlogin" | sudo tee -a /etc/pam.d/lightdm
@@ -159,7 +164,7 @@ fi
 service samba restart
 
 # add the user to the Samba database
-echo -e "trains\ntrains" | (smbpasswd -a -s jmri)
+echo -e "$CUSTOM_PASSWORD\n$CUSTOM_PASSWORD" | (smbpasswd -a -s jmrpi2)
 
 #get tightvncserver
 apt-get -y install tightvncserver
@@ -181,16 +186,16 @@ fi
 update-rc.d tightvncserver defaults
 
 ## ---- Now we do our JMRI file shuffle
-mkdir /home/jmri/.jmri
-chown -Rf jmri: /home/jmri/.jmri
+mkdir /home/$CUSTOM_USER/.jmri
+chown -Rf $CUSTOM_USER: /home/$CUSTOM_USER/.jmri
 
-mkdir -p /home/jmri/.config/lxsession/LXDE-pi
+mkdir -p /home/$CUSTOM_USER/.config/lxsession/LXDE-pi
 
 # To run a more limited version of JMRI (Faceless) comment out the below line and uncomment the one below it
-echo '@/opt/JMRI/PanelPro' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
-#echo '@/opt/JMRI/JmriFaceless' >> /home/jmri/.config/lxsession/LXDE-pi/autostart
-chown -Rf jmri: /home/jmri
-chown -Rf jmri: /opt/JMRI
+echo '@/opt/JMRI/PanelPro' >> /home/$CUSTOM_USER/.config/lxsession/LXDE-pi/autostart
+#echo '@/opt/JMRI/JmriFaceless' >> /home/$CUSTOM_USER/.config/lxsession/LXDE-pi/autostart
+chown -Rf $CUSTOM_USER: /home/$CUSTOM_USER
+chown -Rf $CUSTOM_USER: /opt/JMRI
 
 
 # get the current ip addresses
