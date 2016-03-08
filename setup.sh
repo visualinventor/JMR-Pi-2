@@ -41,9 +41,9 @@ sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
 
 # With dhcpcd these are all we need for a static ip address
 echo "interface wlan0" >> /etc/dhcpcd.conf
-echo "static ip_address=192.168.10.1/24" >> /etc/dhcpcd.conf
-echo "static routers=192.168.10.1" >> /etc/dhcpcd.conf
-echo "static domain_name_servers=192.168.10.1" >> /etc/dhcpcd.conf
+echo "static ip_address=$STATIC_IP/24" >> /etc/dhcpcd.conf
+echo "static routers=$STATIC_IP" >> /etc/dhcpcd.conf
+echo "static domain_name_servers=$STATIC_IP" >> /etc/dhcpcd.conf
 
 cp $WORKING_DIR/conf/hostapd/hostapd.conf  /etc/hostapd/hostapd.conf
 if [ $? -ne 0 ]
@@ -78,7 +78,7 @@ update-rc.d udhcpd defaults
 
 
 # change name from default hostname
-echo "------------- Setting hostname to jmrpi2"
+echo "------------- Setting hostname to $CUSTOM_HOSTNAME"
 sed -e '/127.0.0.1	raspberrypi/ s/^#*/#/' -i /etc/hosts
 echo -e '127.0.0.1\t$CUSTOM_HOSTNAME' >> /etc/hosts
 sed --in-place '/raspberrypi/d' /etc/hostname
@@ -110,13 +110,15 @@ function error()
 }
 
 # CREATE the DOWNLOADS dir and get the latest stable version of JMRI
-mkdir jmri_download
-cd jmri_download
+JMRI_DL_DIR="jmri_download"
+
+mkdir $JMRI_DL_DIR
+cd $JMRI_DL_DIR
 if [ -f $JMRI_PACKAGE_NAME ]
 then
   echo -e "Package already downloading, skipping this step..."
 else
-  echo "Downloading latest production release from $JMRI_URL to $JMRI_PACKAGE_NAME"
+  echo "Downloading latest production release from $JMRI_URL to $JMRI_DL_DIR/$JMRI_PACKAGE_NAME"
   wget -O $JMRI_PACKAGE_NAME "$JMRI_URL"
 fi
 if [ $? -ne 0 ]
@@ -128,19 +130,19 @@ fi
 ## MOVE JMRI into the /opt folder
 echo "Unpacking the JMRI source into /opt"
 cd /opt
-tar -zxf $WORKING_DIR/jmri_downloads/$JMRI_PACKAGE_NAME 
+tar -zxf $WORKING_DIR/$JMRI_DL_DIR/$JMRI_PACKAGE_NAME 
 if [ $? -ne 0 ]
 then
   error "Failed to unpack JMRI sources into /opt"
 fi
 
 
-#create 2 pwd groups for our jmri user to live in:
+#create 2 pwd groups for our jmrpi2 user to live in:
 groupadd -r autologin
 groupadd -r nopasswdlogin
 
 # create the jmri user that we will run as:
-useradd -m -s /bin/bash -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input jmrpi2
+useradd -m -s /bin/bash -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input $CUSTOM_USER
 echo -e "$CUSTOM_USER:$CUSTOM_PASSWORD" | (sudo chpasswd)
 
 gpasswd -a $CUSTOM_USER autologin
@@ -165,7 +167,7 @@ fi
 service samba restart
 
 # add the user to the Samba database
-echo -e "$CUSTOM_PASSWORD\n$CUSTOM_PASSWORD" | (smbpasswd -a -s jmrpi2)
+echo -e "$CUSTOM_PASSWORD\n$CUSTOM_PASSWORD" | (smbpasswd -a -s $CUSTOM_USER)
 
 #get tightvncserver
 apt-get -y install tightvncserver
