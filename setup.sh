@@ -8,6 +8,7 @@
 CUSTOM_USER="jmrpi2"
 CUSTOM_PASSWORD="trains"
 CUSTOM_HOSTNAME="jmrpi2"
+STATIC_IP="192.168.10.1"
 
 #Set the working dir up high
 WORKING_DIR=$(pwd)
@@ -17,8 +18,8 @@ echo "Making sure your pi has the most recent sources"
 apt-get update
 
 # We need to set a static IP address since we're going to be a hotspot
-echo "------------- Setting static IP address of 192.168.10.1"
-ifconfig wlan0 192.168.10.1
+echo "------------- Setting static IP address of $STATIC_IP"
+ifconfig wlan0 $STATIC_IP
 
 # Installing wi-fi hotspot library
 echo "------------- Going to get and install the wifi hotspot software"
