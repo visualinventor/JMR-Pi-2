@@ -210,6 +210,6 @@ echo "JMRI will take several minutes to start the first time it is run."
 echo "Once JMRI is started you must connect to the Raspberry Pi and finish setup INSIDE JMRI."
 echo "Up to this point JMRI doesn't know your command station or connection method. YOU NEED TO SET THIS UP NEXT."
 echo "To connect through VNC or Remote Desktop use the following IP/port: $ip:5901"
-echo "Your JMRI config files will be available by browsing with SAMBA on a PC  to \\$ip\\JMRI\\ or via Macintosh $CUSTOMHOSTNAME.local"
+echo "Your JMRI config files will be available by browsing with SAMBA on a PC  to \\$ip\\JMRI\\ or via Macintosh $CUSTOM_HOSTNAME.local"
 
 exit 0
