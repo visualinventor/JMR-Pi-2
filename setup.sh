@@ -9,6 +9,7 @@ CUSTOM_USER="jmrpi2"
 CUSTOM_PASSWORD="trains"
 CUSTOM_HOSTNAME="jmrpi2"
 STATIC_IP="192.168.10.1"
+REPO_NAME="JMRPi2"
 
 #Set the working dir up high
 WORKING_DIR=$(pwd)
@@ -93,8 +94,9 @@ then
   error "Failed to install JAVA"
 fi
 
-## DOWNLOAD the various JMRI packages we need
-echo "------------- DOWNLOAD the various JMRI packages we need"
+
+# CREATE the DOWNLOADS dir and get the latest stable version of JMRI
+JMRI_DL_DIR="jmri_download"
 JMRI_URL=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 5,6 | cut -d " " -f 2 | cut -d '"' -f 2)
 JMRI_PACKAGE_NAME=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 6 | cut -d "/" -f 8)
 
@@ -109,11 +111,18 @@ function error()
   exit 1
 }
 
-# CREATE the DOWNLOADS dir and get the latest stable version of JMRI
-JMRI_DL_DIR="jmri_download"
 
-mkdir $JMRI_DL_DIR
+if [ -d "$JMRI_DL_DIR" ]
+then
+  echo "The $JMRI_DL_DIR already exists ... moving on"
+else
+  mkdir $JMRI_DL_DIR
+fi
+
 cd $JMRI_DL_DIR
+
+## DOWNLOAD the various JMRI packages we need
+echo "------------- DOWNLOAD the various JMRI packages we need"
 if [ -f $JMRI_PACKAGE_NAME ]
 then
   echo -e "Package already downloading, skipping this step..."
