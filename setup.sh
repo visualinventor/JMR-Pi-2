@@ -11,6 +11,11 @@ CUSTOM_HOSTNAME="jmrpi2"
 STATIC_IP="192.168.10.1"
 REPO_NAME="JMRPi2"
 
+##JMRI Parts
+JMRI_DL_DIR="jmri_download"
+JMRI_URL=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 5,6 | cut -d " " -f 2 | cut -d '"' -f 2)
+JMRI_PACKAGE_NAME=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 6 | cut -d "/" -f 8)
+
 #Set the working dir up high
 WORKING_DIR=$(pwd)
 
@@ -94,11 +99,6 @@ then
   error "Failed to install JAVA"
 fi
 
-
-# CREATE the DOWNLOADS dir and get the latest stable version of JMRI
-JMRI_DL_DIR="jmri_download"
-JMRI_URL=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 5,6 | cut -d " " -f 2 | cut -d '"' -f 2)
-JMRI_PACKAGE_NAME=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 6 | cut -d "/" -f 8)
 
 function warning()
 {
