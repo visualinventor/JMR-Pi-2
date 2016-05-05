@@ -9,14 +9,14 @@ CUSTOM_USER="jmrpi2"
 CUSTOM_PASSWORD="trains"
 CUSTOM_HOSTNAME="jmrpi2"
 STATIC_IP="192.168.10.1"
-REPO_NAME="JMRPi2"
+#REPO_NAME="JMRPi2"
 
 ##JMRI Parts
 JMRI_DL_DIR="jmri_download"
 JMRI_URL=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 5,6 | cut -d " " -f 2 | cut -d '"' -f 2)
 JMRI_PACKAGE_NAME=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut -d ":" -f 6 | cut -d "/" -f 8)
 
-#Set the working dir up high
+#Set the working dir
 WORKING_DIR=$(pwd)
 
 # Make sure the pi has the most recent sources
@@ -24,32 +24,36 @@ echo "Making sure your pi has the most recent sources"
 apt-get update
 
 # We need to set a static IP address since we're going to be a hotspot
-echo "------------- Setting static IP address of $STATIC_IP"
+echo "------------- Setting static IP address to $STATIC_IP"
 ifconfig wlan0 $STATIC_IP
 
 # Installing wi-fi hotspot library
-echo "------------- Going to get and install the wifi hotspot software"
+echo "------------- Going to download and install the wifi hotspot and DHCP software"
 apt-get -y install hostapd udhcpd
 if [ $? -ne 0 ]
 then
-  error "Failed to install wi-fi hot spot library"
+  error "Failed to install wi-fi hotspot and DHCP library"
 fi
 
-cp $WORKING_DIR/conf/hostapd/udhcpd.conf /etc/udhcpd.conf
+## BEGIN DHCP changes
+echo "------------- Making DHCP changes"
+# TEST THIS: COPY variables from here into the .conf files
+ROUTER_IP=$STATIC_IP .$WORKING_DIR/conf/udhcpd/udhcpd.conf
+
+cp $WORKING_DIR/conf/udhcpd/udhcpd.conf /etc/udhcpd.conf
 if [ $? -ne 0 ]
 then
   error "Failed to copy udhcpd config file"
 fi
 
-# We need to comment out the no dhcp option
+# We need to comment out the dhcp option
 sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
-
 
 # With dhcpcd these are all we need for a static ip address
 echo "interface wlan0" >> /etc/dhcpcd.conf
 echo "static ip_address=$STATIC_IP/24" >> /etc/dhcpcd.conf
 echo "static routers=$STATIC_IP" >> /etc/dhcpcd.conf
-echo "static domain_name_servers=$STATIC_IP" >> /etc/dhcpcd.conf
+echo "static domain_name_servers=$STATIC_IP 8.8.8.8" >> /etc/dhcpcd.conf
 
 cp $WORKING_DIR/conf/hostapd/hostapd.conf  /etc/hostapd/hostapd.conf
 if [ $? -ne 0 ]
@@ -57,7 +61,7 @@ then
   error "Failed to copy hostapd config file"
 fi
 
-# Make sure the DAEMON is set 
+# Make sure the DAEMON is set
 echo 'DAEMON_CONF="/etc/hostapd/hostapd.conf"' >> /etc/default/hostapd
 
 # Start the nat ip forwarding
@@ -65,10 +69,10 @@ sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
 
 # Setup IP tables
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE 
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
- 
+
 # Save IP tables
 sh -c "iptables-save > /etc/iptables.ipv4.nat"
 echo "up iptables-restore < /etc/iptables.ipv4.nat" >> /etc/network/interfaces
@@ -84,20 +88,33 @@ update-rc.d udhcpd defaults
 
 
 # change name from default hostname
-echo "------------- Setting hostname to $CUSTOM_HOSTNAME"
-sed -e '/127.0.0.1	raspberrypi/ s/^#*/#/' -i /etc/hosts
-echo -e '127.0.0.1\t$CUSTOM_HOSTNAME' >> /etc/hosts
-sed --in-place '/raspberrypi/d' /etc/hostname
-echo $CUSTOM_HOSTNAME >> /etc/hostname
-hostname $CUSTOM_HOSTNAME
+echo "------------- Setting host and hostname to $CUSTOM_HOSTNAME"
+if grep -Fxq "raspberrypi" /etc/hosts
+then
+    CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
+    NEW_HOSTNAME=$CUSTOM_HOSTNAME
+    if [ $? -eq 0 ]; then
+      echo $NEW_HOSTNAME > /etc/hostname
+      sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
+    fi
+    # OLD HOSTNAME code
+    #sed -e "/127.0.0.1	raspberrypi/ s/^#*/#/" -i /etc/hosts
+    #echo -e '127.0.0.1\t$CUSTOM_HOSTNAME' >> /etc/hosts
+    #sed -i '/raspberrypi/d' /etc/hostname
+    #echo $CUSTOM_HOSTNAME >> /etc/hostname
+    #hostname $CUSTOM_HOSTNAME
+else
+    echo "Looks like the hostname has been changed from the default skipping hostname change"
+fi
+
 
 ## Installing a JMRI 4 or greater compatible java with rxtx library:
-echo "------------- Installing a JMRI 4 or greater compatible java with rxtx library"
-apt-get -y install oracle-java8-jdk librxtx-java xrdp
-if [ $? -ne 0 ]
-then
-  error "Failed to install JAVA"
-fi
+#echo "------------- Installing a JMRI 4 or greater compatible java with rxtx library"
+#apt-get -y install oracle-java8-jdk librxtx-java xrdp
+#if [ $? -ne 0 ]
+#then
+#  error "Failed to install JAVA"
+#fi
 
 
 function warning()
@@ -139,7 +156,7 @@ fi
 ## MOVE JMRI into the /opt folder
 echo "Unpacking the JMRI source into /opt"
 cd /opt
-tar -zxf $WORKING_DIR/$JMRI_DL_DIR/$JMRI_PACKAGE_NAME 
+tar -zxf $WORKING_DIR/$JMRI_DL_DIR/$JMRI_PACKAGE_NAME
 if [ $? -ne 0 ]
 then
   error "Failed to unpack JMRI sources into /opt"
@@ -167,6 +184,8 @@ if [ $? -ne 0 ]
 then
   error "Failed to install samba"
 fi
+# TEST THIS: replace values in file with variable
+CUSTOM_USER=$CUSTOM_USER .$WORKING_DIR/conf/samba/smb.conf
 
 cp $WORKING_DIR/conf/samba/smb.conf /etc/samba/smb.conf
 if [ $? -ne 0 ]
