@@ -20,12 +20,16 @@ JMRI_PACKAGE_NAME=$(curl -s http://jmri.org/releaselist -o - | tr '\n' ' ' | cut
 WORKING_DIR=$(pwd)
 
 # Make sure the pi has the most recent sources
-echo "Making sure your pi has the most recent sources"
+echo "------------- Making sure your pi has the most recent sources"
 apt-get update
 
 # We need to set a static IP address since we're going to be a hotspot
 echo "------------- Setting static IP address to $STATIC_IP"
 ifconfig wlan0 $STATIC_IP
+
+echo "------------- Backing up original Network Interfaces"
+cp /etc/network/interfaces /etc/network/interfacesbackup
+cp $WORKING_DIR/conf/network/interfaces /etc/network/interfaces
 
 # Installing wi-fi hotspot library
 echo "------------- Going to download and install the wifi hotspot and DHCP software"
@@ -37,14 +41,13 @@ fi
 
 ## BEGIN DHCP changes
 echo "------------- Making DHCP changes"
-# TEST THIS: COPY variables from here into the .conf files
-ROUTER_IP=$STATIC_IP .$WORKING_DIR/conf/udhcpd/udhcpd.conf
-
 cp $WORKING_DIR/conf/udhcpd/udhcpd.conf /etc/udhcpd.conf
 if [ $? -ne 0 ]
 then
   error "Failed to copy udhcpd config file"
 fi
+
+echo "opt router\t$STATIC_IP" >> /etc/udhcpd.conf
 
 # We need to comment out the dhcp option
 sed -e '/DHCPD_ENABLED/ s/^#*/#/' -i /etc/default/udhcpd
@@ -77,6 +80,10 @@ iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
 sh -c "iptables-save > /etc/iptables.ipv4.nat"
 echo "up iptables-restore < /etc/iptables.ipv4.nat" >> /etc/network/interfaces
 
+echo "------------- Making sure DHCP starts after static IP"
+cp $WORKING_DIR/conf/wlan/fixnet /etc/network/if-up.d/fixnet
+chmod 755 /etc/network/if-up.d/fixnet
+
 # Start them up
 service hostapd start
 service udhcpd start
@@ -89,20 +96,13 @@ update-rc.d udhcpd defaults
 
 # change name from default hostname
 echo "------------- Setting host and hostname to $CUSTOM_HOSTNAME"
-if grep -Fxq "raspberrypi" /etc/hosts
+if grep raspberrypi /etc/hosts
 then
     CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
-    NEW_HOSTNAME=$CUSTOM_HOSTNAME
     if [ $? -eq 0 ]; then
-      echo $NEW_HOSTNAME > /etc/hostname
-      sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
+      echo $CUSTOM_HOSTNAME > /etc/hostname
+      sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$CUSTOM_HOSTNAME/g" /etc/hosts
     fi
-    # OLD HOSTNAME code
-    #sed -e "/127.0.0.1	raspberrypi/ s/^#*/#/" -i /etc/hosts
-    #echo -e '127.0.0.1\t$CUSTOM_HOSTNAME' >> /etc/hosts
-    #sed -i '/raspberrypi/d' /etc/hostname
-    #echo $CUSTOM_HOSTNAME >> /etc/hostname
-    #hostname $CUSTOM_HOSTNAME
 else
     echo "Looks like the hostname has been changed from the default skipping hostname change"
 fi
@@ -117,18 +117,7 @@ fi
 #fi
 
 
-function warning()
-{
-  echo "WARNING: $1"
-}
-
-function error()
-{
-  echo "ERROR: $1"
-  exit 1
-}
-
-
+echo "------------- Checking to see if we already downloaded JMRI"
 if [ -d "$JMRI_DL_DIR" ]
 then
   echo "The $JMRI_DL_DIR already exists ... moving on"
@@ -144,7 +133,7 @@ if [ -f $JMRI_PACKAGE_NAME ]
 then
   echo -e "Package already downloading, skipping this step..."
 else
-  echo "Downloading latest production release from $JMRI_URL to $JMRI_DL_DIR/$JMRI_PACKAGE_NAME"
+  echo "Downloading latest JMRI production release from $JMRI_URL to $JMRI_DL_DIR/$JMRI_PACKAGE_NAME"
   wget -O $JMRI_PACKAGE_NAME "$JMRI_URL"
 fi
 if [ $? -ne 0 ]
@@ -184,14 +173,13 @@ if [ $? -ne 0 ]
 then
   error "Failed to install samba"
 fi
-# TEST THIS: replace values in file with variable
-CUSTOM_USER=$CUSTOM_USER .$WORKING_DIR/conf/samba/smb.conf
 
 cp $WORKING_DIR/conf/samba/smb.conf /etc/samba/smb.conf
 if [ $? -ne 0 ]
 then
   error "Failed to copy samba config file"
 fi
+
 service samba restart
 
 # add the user to the Samba database
